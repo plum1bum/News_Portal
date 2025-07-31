@@ -1,6 +1,14 @@
 from django.urls import path
 from . import views
 from .models import Post
+from django.urls import path, include
+from django.contrib import admin
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('accounts/', include('allauth.urls')),  # для allauth
+    # ваши собственные урлы
+]
 
 urlpatterns = [
     path('news/', views.news_list, name='news_list'),
@@ -22,3 +30,6 @@ urlpatterns = [
     path('articles/<int:pk>/edit/', lambda request, pk: views.edit_post(request, pk, Post.ARTICLE), name='edit_article'),
     path('articles/<int:pk>/delete/', lambda request, pk: views.delete_post(request, pk, Post.ARTICLE), name='delete_article'),
 ]
+
+
+

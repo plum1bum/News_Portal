@@ -75,3 +75,14 @@ def news_list(request):
 def articles_list(request):
     posts = Post.objects.filter(post_type=Post.ARTICLE).order_by('-created_at')
     return render(request, 'posts/list.html', {'posts': posts, 'title': 'Статьи'})
+
+
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import Group
+from django.shortcuts import redirect
+
+@login_required
+def become_author(request):
+    authors_group, _ = Group.objects.get_or_create(name='authors')
+    request.user.groups.add(authors_group)
+    return redirect('profile')  # или куда нужно

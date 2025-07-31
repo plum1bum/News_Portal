@@ -1,5 +1,19 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic import UpdateView
+from django.urls import reverse_lazy
+from django.contrib.auth.models import User
+from django.contrib import messages
+
+class ProfileUpdateView(LoginRequiredMixin, UpdateView):
+    model = User
+    fields = ['first_name', 'last_name', 'email']
+    template_name = 'profiles/profile_form.html'
+    success_url = reverse_lazy('profile_detail')
+
+    def get_object(self, queryset=None):
+        return self.request.user
 
 class Author(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -76,3 +90,34 @@ class News(models.Model):
     def __str__(self):
         return self.title
 
+from django.contrib.auth.models import User, Group
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
+@receiver(post_save, sender=User)
+def add_user_to_common(sender, instance, created, **kwargs):
+    if created:
+        common_group, _ = Group.objects.get_or_create(name='common')
+        instance.groups.add(common_group)
+
+        from django.contrib.auth.mixins import PermissionRequiredMixin, UserPassesTestMixin
+
+        from django.views.generic import CreateView, UpdateView
+        from .models import Post
+
+        class PostCreateView(PermissionRequiredMixin, CreateView):
+            model = Post
+            fields = ['title', 'content']
+            template_name = 'posts/post_form.html'
+            permission_required = 'app.add_post'  # название вашего приложения
+
+            def has_permission(self):
+                return self.request.user.groups.filter(name='authors').exists()
+
+        class PostUpdateView(PermissionRequiredMixin, UpdateView):
+            model = Post
+            fields = ['title', 'content']
+            template_name = 'posts/post_form.html'
+
+            def has_permission(self):
+                return self.request.user.groups.filter(name='authors').exists()
