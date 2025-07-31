@@ -1,0 +1,13 @@
+<!-- templates/posts/list.html -->
+<h1>{{ title }}</h1>
+<ul>
+  {% for post in posts %}
+    <li>
+      <a href="{% url 'edit_'|add:post.post_type pk=post.pk %}">{{ post.title }}</a>
+      (<a href="{% url 'delete_'|add:post.post_type pk=post.pk %}">удалить</a>)
+    </li>
+  {% empty %}
+    <li>Нет постов</li>
+  {% endfor %}
+</ul>
+<a href="{% url 'create_'|add:post.post_type %}">Создать новый {{ post_type|title }}</a>

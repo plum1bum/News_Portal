@@ -1,0 +1,9 @@
+<!-- templates/posts/edit_post.html -->
+<h1>Редактировать {{ post_type|title }}: {{ post.title }}</h1>
+<form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit">Сохранить</button>
+</form>
+<a href="{% url 'news_list' %}">К списку новостей</a> |
+<a href="{% url 'articles_list' %}">К списку статей</a>

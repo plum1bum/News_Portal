@@ -1,0 +1,8 @@
+<!-- templates/posts/delete_post.html -->
+<h1>Удалить {{ post_type|title }}: {{ post.title }}</h1>
+<form method="post">
+  {% csrf_token %}
+  <p>Вы уверены, что хотите удалить?</p>
+  <button type="submit">Да, удалить</button>
+</form>
+<a href="{% url 'news_list' %}">Отмена</a>

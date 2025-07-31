@@ -1,0 +1,9 @@
+<!-- templates/posts/create_post.html -->
+<h1>Создать {{ post_type|title }}</h1>
+<form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit">Создать</button>
+</form>
+<a href="{% url 'news_list' %}">Назад к списку новостей</a> |
+<a href="{% url 'articles_list' %}">Назад к списку статей</a>
