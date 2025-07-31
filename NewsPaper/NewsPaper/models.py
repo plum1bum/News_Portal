@@ -121,3 +121,27 @@ def add_user_to_common(sender, instance, created, **kwargs):
 
             def has_permission(self):
                 return self.request.user.groups.filter(name='authors').exists()
+
+class Category(models.Model):
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
+
+class Article(models.Model):
+    category = models.ForeignKey(Category, related_name='articles', on_delete=models.CASCADE)
+    title = models.CharField(max_length=255)
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    summary = models.TextField()
+
+    def __str__(self):
+        return self.title
+
+class Subscription(models.Model):
+    user = models.ForeignKey(User, related_name='subscriptions', on_delete=models.CASCADE)
+    category = models.ForeignKey(Category, related_name='subscriptions', on_delete=models.CASCADE)
+    email = models.EmailField()
+
+    class Meta:
+        unique_together = ('user', 'category')
