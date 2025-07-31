@@ -166,3 +166,105 @@ CELERY_BEAT_SCHEDULE = {
         'schedule': crontab(hour=8, minute=0, day_of_week='mon'),
     },
 }
+
+
+import os
+import sys
+from django.utils.log import DEFAULT_LOGGING
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose_console': {
+            'format': '{levelname} [{asctime}] - {message} - {pathname}',
+            'style': '{',
+        },
+        'detailed': {
+            'format': '{levelname} [{asctime}] - {module} - {message}',
+            'style': '{',
+        },
+        'error': {
+            'format': '{levelname} [{asctime}] - {message} - {pathname}',
+            'style': '{',
+        },
+        'security_formatter': {
+            'format': '{levelname} [{asctime}] - {module} - {message}',
+            'style': '{',
+        },
+    },
+    'filters': {
+        'debug_filter': {
+            '()': 'django.utils.log.CallbackFilter',
+            'callback': lambda record: not os.getenv('DEBUG') == 'True',  # Отправка в консоль только если DEBUG = True
+        },
+        'prod_filter': {
+            '()': 'django.utils.log.CallbackFilter',
+            'callback': lambda record: os.getenv('DEBUG') == 'False',  # Отправка в файл только если DEBUG = False
+        },
+    },
+    'handlers': {
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose_console',
+            'filters': ['debug_filter'],
+        },
+        'general_file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'general.log'),
+            'formatter': 'detailed',
+            'filters': ['prod_filter'],
+        },
+        'errors_file': {
+            'level': 'ERROR',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'errors.log'),
+            'formatter': 'error',
+        },
+        'security_file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'security.log'),
+            'formatter': 'security_formatter',
+        },
+        'mail_admins': {
+            'level': 'ERROR',
+            'class': 'django.utils.log.AdminEmailHandler',
+            'formatter': 'error',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['general_file', 'errors_file', 'security_file'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'django.request': {
+            'handlers': ['errors_file', 'mail_admins'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+        'django.server': {
+            'handlers': ['errors_file', 'mail_admins'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+        'django.template': {
+            'handlers': ['errors_file'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+        'django.db.backends': {
+            'handlers': ['errors_file'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+        'django.security': {
+            'handlers': ['security_file'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+    }
+}
