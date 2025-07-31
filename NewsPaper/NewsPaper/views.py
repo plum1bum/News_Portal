@@ -1,5 +1,6 @@
 from django.shortcuts import render, get_object_or_404
 from .models import News
+from .tasks import notify_subscribers
 
 def news_list(request):
     articles = News.objects.all().order_by('-pub_date')
@@ -35,6 +36,19 @@ def create_post(request, post_type):
         'form': form,
         'post_type': post_type,
     }
+
+    def create_news_article(request, category):
+        # Ваш текущий код
+        if form.is_valid():
+            news_article = form.save(commit=False)
+            # Сохранение новости
+            news_article.save()
+
+            # Отправка уведомления подписчикам
+            notify_subscribers.delay(news_article.id)
+
+            return redirect('news_list')
+
     template_name = 'posts/create_post.html'
     return render(request, template_name, context)
 
@@ -86,3 +100,4 @@ def become_author(request):
     authors_group, _ = Group.objects.get_or_create(name='authors')
     request.user.groups.add(authors_group)
     return redirect('profile')  # или куда нужно
+
